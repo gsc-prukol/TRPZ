@@ -8,5 +8,11 @@ import random
 
 alpha = [random.randint(1, 200) for x in range(150)]
 beta = alpha[0:15]
-print(alpha)
-print (beta)
+i = beta.index(min(beta))
+for x in alpha[14:]:
+    if x > beta[i]:
+        beta[i] = x
+        i = beta.index(min(beta))
+print(beta, end = '\n\n')
+fout = open('out.txt', 'w', encoding='utf-8')
+print(beta, file = fout)
