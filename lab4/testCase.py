@@ -9,6 +9,7 @@ class PythonOrgSearch(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.Firefox(executable_path=r"./geckodriver")
         self.driver.get("https://rozetka.com.ua/ua/")
+       # self.driver.find_element_by_id('1'). # v.send_keys(100)
 
     def test_search_in_rozetka_ua(self):
         """
@@ -27,6 +28,9 @@ class PythonOrgSearch(unittest.TestCase):
         search_results_page = page.SearchResultsPage(self.driver)
         #Verifies that the results page is not empty
         assert search_results_page.is_results_found(), "No results found."
+        search_results_page.minimum_price_element = 100
+        search_results_page.maximum_price_element = 2000
+        search_results_page.update_range_price()
         time.sleep(10)
 
     def tearDown(self):
