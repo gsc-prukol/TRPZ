@@ -132,9 +132,9 @@ class MainPage(BasePage):
     search_text_element = SearchTextElement()
     search_button = SearchButton()
 
-    def is_title_matches(self):
+    def is_title_matches(self, text):
         """Verifies that the hardcoded text "Пошук" appears in page title"""
-        return "ROZETKA" in self.driver.title
+        return text in self.driver.title
 
     def click_go_button(self):
         """Triggers the search"""

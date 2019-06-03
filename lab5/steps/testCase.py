@@ -1,57 +1,101 @@
-import unittest
+from behave import *
 from selenium import webdriver
 import page
 import time
 
-class PythonOrgSearch(unittest.TestCase):
-    """A sample test class to show how page object works"""
+#Откроем главную страницу. Передадим в качестве аргумента адрес страницы.
+@given("website '{url}'")
+def step(context, url):
+    context.browser = webdriver.Firefox(executable_path=r"./geckodriver")
+    context.browser.get("https://rozetka.com.ua/ua/")
+    context.main_page = page.MainPage(context.browser)
 
-    def setUp(self):
-        self.driver = webdriver.Firefox(executable_path=r"./geckodriver")
-        self.driver.get("https://rozetka.com.ua/ua/")
-        # self.driver.find_element_by_id('1').value_of_css_property('background-color') # v.send_keys(100)
+@then("page title include text '{text}'")
+def step(context, text):
+    assert context.main_page.is_title_matches(text), f"{text} title doesn't match."
 
-    def test_search_in_rozetka_ua(self):
-        """
-        Tests rozetka.ua search feature. Searches for the word "украинская" then verified that some results show up.
-        Note that it does not look for any particular text in search results page. This test verifies that
-        the results were not empty.
-        """
+@then("input in search text '{text}'")
+def step(context, text):
+    context.main_page.search_text_element = text
 
-        #Load the main page. In this case the home page of Python.og.
-        main_page = page.MainPage(self.driver)
-        #Checks if the word "Python" is in title
-        assert main_page.is_title_matches(), "python.org title doesn't match."
-        #Sets the text of search textbox to "pycon"
-        main_page.search_text_element = "украина"
-        main_page.click_go_button()
-        search_results_page = page.SearchResultsPage(self.driver)
-        #Verifies that the results page is not empty
-        assert search_results_page.is_results_found(), "No results found."
-        search_results_page.set_category_ukrainian_souvenirs()
-        search_results_page.set_country_producer_ukraine()
-        search_results_page.minimum_price_element = 100
-        search_results_page.maximum_price_element = 2000
-        search_results_page.update_range_price()
-        search_results_page.click_first_product()
-        product_page = page.ProductPage(self.driver)
-        product_page.click_buy_product()
-        product_page.click_to_order()
-        order_page = page.OrderPage(self.driver)
-        order_page.name_and_sorname_text_element = "Імя Прізвище"
-        order_page.mobile_phone_text_element = '+380666666666'
-        order_page.email_text_element = 'n1232ame@gmail.com'
-        time.sleep(5)
-        order_page.click_next_step()
-        order_page.name_text_element = 'Імя'
-        order_page.sorname_text_element = 'Прізвище'
-        order_page.click_select_np()
-        time.sleep(5)
-        assert order_page.make_order_button_is_unnable(), 'Button confirmation of the order is not unnable'
-        time.sleep(10)
+# Теперь нажмем на кнопку "Найти"
+@then('push button search')
+def step(context):
+    context.main_page.click_go_button()
 
-    def tearDown(self):
-        self.driver.close()
+@then("page search has results for search")
+def step(context):
+    context.search_results_page = page.SearchResultsPage(context.browser)
+    #Verifies that the results page is not empty
+    assert context.search_results_page.is_results_found(), "No results found."
 
-if __name__ == "__main__":
-    unittest.main()
+@then("set category as ukrainian souvenirs")
+def step(context):
+    context.search_results_page.set_category_ukrainian_souvenirs()
+
+@then("set the country manufacturer Ukraine")
+def step(context):
+    context.search_results_page.set_country_producer_ukraine()
+
+@then("set the minimum price of the goods as '{price}'")
+def step(context, price):
+    context.search_results_page.minimum_price_element = price
+    context.search_results_page.update_range_price()
+
+@then("set the maximum price of the goods as '{price}'")
+def step(context, price):
+    context.search_results_page.maximum_price_element = price
+    context.search_results_page.update_range_price()
+
+@then("click on the first element")
+def step(context):
+    context.search_results_page.click_first_product()
+    context.product_page = page.ProductPage(context.browser)
+
+@then("push the button 'to basket'")
+def step(context):
+    context.product_page.click_buy_product()
+
+@then("push the button 'order'")
+def step(context):
+    context.product_page.click_to_order()
+    context.order_page = page.OrderPage(context.browser)
+
+@then("input name and last name as '{text}'")
+def step(context, text):
+    context.order_page.name_and_sorname_text_element = text
+
+@then("input phone number as '{text}'")
+def step(context, text):
+    context.order_page.mobile_phone_text_element = text
+
+@then("input email as '{text}'")
+def step(context, text):
+    context.order_page.email_text_element = 'n1232ame@gmail.com'
+
+@then("push the button 'next'")
+def step(context):
+    time.sleep(5)
+    context.order_page.click_next_step()
+
+@then("input name as '{text}'")
+def step(context, text):
+    context.order_page.name_text_element = text
+
+@then("input last name as '{text}'")
+def step(context, text):
+    context.order_page.sorname_text_element = text
+
+@then("select 'New mail' office")
+def step(context):
+    context.order_page.click_select_np()
+
+@then("button 'confirm order' is active")
+def step(context):
+    time.sleep(5)
+    assert context.order_page.make_order_button_is_unnable(), 'Button confirmation of the order is not unnable'
+
+@then("close webdriver")
+def step(context):
+        context.browser.close()
+
